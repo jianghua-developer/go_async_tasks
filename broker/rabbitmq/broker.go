@@ -63,6 +63,9 @@ const (
 	DefaultDeadMessageTTL     = 7 * 24 * 3600 * 1000 // 死信队列存活时间 单位ms
 )
 
+// DelayExchangeName 是 rabbitmq_delayed_message_exchange 插件使用的延时交换机。
+const DelayExchangeName = "delay.exchange"
+
 type BrokerConnection struct {
 	conn            *amqp.Connection
 	notifyConnClose chan *amqp.Error
@@ -286,17 +289,6 @@ func (r *Broker) buildQueueArgument(queueName string) amqp.Table {
 	return arg
 }
 
-func (r *Broker) buildQueueArgumentWithPlugin(queueName string) amqp.Table {
-	arg := amqp.Table{}
-	if r.options.maxPriority > 0 {
-		arg["x-max-priority"] = r.options.maxPriority
-	}
-	arg["x-dead-letter-exchange"] = ""
-	arg["x-dead-letter-routing-key"] = util.XQName(queueName)
-	arg["x-delayed-type"] = "direct"
-	return arg
-}
-
 func (r *Broker) declareQueue(ctx context.Context, queueName string) error {
 	if !r.queues.Contains(queueName) {
 		r.queues.Add(queueName)
@@ -366,18 +358,19 @@ func (r *Broker) ensureDeclareQueue(ctx context.Context, queueName string, decla
 }
 
 func (r *Broker) declareDelayQueueWithPlugin(c *BrokerConnection, queueName string) error {
-	// 使用rabbitmq_delayed_message_exchange插件实现
-	arg := r.buildQueueArgumentWithPlugin(queueName)
-	err := c.channel.ExchangeDeclare("delay.exchange", "x-delayed-message", true, false, false, false, arg)
+	// 使用 rabbitmq_delayed_message_exchange 插件实现：
+	// 延时消息发往 delay.exchange（带 x-delay 头），到期后由插件路由到 .DQ 队列。
+	exchangeArgs := amqp.Table{"x-delayed-type": "direct"}
+	err := c.channel.ExchangeDeclare(DelayExchangeName, "x-delayed-message", true, false, false, false, exchangeArgs)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.channel.QueueDeclare(util.DQName(queueName), true, false, false, false, arg)
+	_, err = c.channel.QueueDeclare(util.DQName(queueName), true, false, false, false, r.buildQueueArgument(queueName))
 	if err != nil {
 		return err
 	}
-	err = c.channel.QueueBind(util.DQName(queueName), util.DQName(queueName), "delay.exchange", false, arg)
+	err = c.channel.QueueBind(util.DQName(queueName), util.DQName(queueName), DelayExchangeName, false, nil)
 
 	if err != nil {
 		return err
@@ -468,10 +461,15 @@ func (r *Broker) Enqueue(ctx context.Context, message *messages.Message) error {
 		return err
 	}
 
+	exchange := ""
 	if message.IsDelayed() {
 		message.QueueName = util.DQName(queueName)
+		if r.usePlugin() {
+			// 延时消息交给插件交换机，按 x-delay 头延迟后路由到 .DQ
+			exchange = DelayExchangeName
+		}
 	}
-	err = r.ensureEnqueue(ctx, message)
+	err = r.ensureEnqueue(ctx, exchange, message)
 	if err != nil {
 		return err
 	}
@@ -482,7 +480,7 @@ func (r *Broker) Enqueue(ctx context.Context, message *messages.Message) error {
 	return nil
 }
 
-func (r *Broker) ensureEnqueue(ctx context.Context, message *messages.Message) error {
+func (r *Broker) ensureEnqueue(ctx context.Context, exchange string, message *messages.Message) error {
 
 	errChan := make(chan error, 1)
 	attempts := uint(1)
@@ -533,10 +531,16 @@ func (r *Broker) ensureEnqueue(ctx context.Context, message *messages.Message) e
 				continue
 			}
 
-			err = c.channel.Publish("", message.QueueName, false, false, amqp.Publishing{
+			var headers amqp.Table
+			if exchange != "" && message.Options.Delay > 0 {
+				// 插件按 x-delay（毫秒）延迟投递
+				headers = amqp.Table{"x-delay": message.Options.Delay.Milliseconds()}
+			}
+			err = c.channel.Publish(exchange, message.QueueName, false, false, amqp.Publishing{
 				ContentType:  "application/json",
 				Priority:     message.Options.Priority,
 				DeliveryMode: amqp.Persistent,
+				Headers:      headers,
 				Body:         body,
 			})
 			if err != nil {

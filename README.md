@@ -13,7 +13,7 @@ Producer ──► RabbitMQ ──► Consumer ──► 优先队列 / 延时�
 ## 特性
 
 - **任务模型**：注册任务函数，按 `{type, value}` 自动编解码参数，支持 `context.Context` 注入与 panic 恢复
-- **异步 / 延时 / 优先级**：延时消息支持 `rabbitmq_delayed_message_exchange` 插件直投，无插件时自动退化为 TTL + 死信队列
+- **异步 / 延时 / 优先级**：延时消息支持两种实现——插件模式经 `delay.exchange`（`x-delay`）由 broker 延迟；无插件时由 Worker 取入进程内延时队列，到期重新投递
 - **周期任务**：任务成功后按 `Period` 间隔自动重新入队
 - **失败重试**：指数退避（可配置上下限）、条件重试（`RetryWhen`）、异常豁免（`RetryEscape`）
 - **死信处理**：消费失败的消息进入死信队列，由独立的 DLX Worker 消费，避免毒消息反复投递
@@ -21,7 +21,7 @@ Producer ──► RabbitMQ ──► Consumer ──► 优先队列 / 延时�
 - **结果查询**：任务结果写入 Backend，可通过 `TaskResult.Result / Completed` 异步查询
 - **中间件**：8 个生命周期钩子，按阶段注册，可自行扩展
 - **可插拔**：Broker、Backend、Barrier、ID 生成器均为接口，替换实现不影响内核
-- **可靠性**：Publisher Confirm、手动 Ack、连接/信道断线自动重连、优雅停机时未到期延时消息重新入队
+- **可靠性**：Publisher Confirm、手动 Ack、连接/信道断线自动重连、未确认消息在连接关闭后自动重回队列
 
 ## 快速开始
 
@@ -146,6 +146,24 @@ done, _ := g.Completed(ctx)
 
 Group 使用 Redis barrier 做计数，`Watch` 乐观事务保证并发安全。
 
+## 延时任务的两种实现
+
+### 插件模式（`rabbitmq.UsePlugin(true)`）
+
+延时消息发往 `delay.exchange`（类型 `x-delayed-message`），并携带 `x-delay` 头；到点后由插件路由到 `<queue>.DQ`，Worker 消费后直接进入工作队列。
+
+- 优点：延时状态由 broker 承担，扩展性好；Worker 重启不影响计时
+- 前提：RabbitMQ 需启用 `rabbitmq_delayed_message_exchange` 插件
+
+### 内存模式（默认）
+
+生产者把延时消息投递到 `<queue>.DQ`，Worker **立即取走但不 ACK**，放入进程内按 ETA 排序的延时队列；到期后复制消息、清零 `delay`、重新投递回正常队列，成功后才 ACK 原消息。
+
+- 优点：不依赖插件，精度取决于进程内定时器
+- 代价：待到期消息占用 prefetch 名额（默认 `并发数 × 2`），大量长延时任务会阻塞 `.DQ` 消费；进程重启后未 ACK 的消息回到 `.DQ`，会**重新计时**；"重投成功但 ACK 失败"会导致重复投递（at-least-once）
+
+两种模式对上层 API 完全一致，切换只需一个 Broker 选项。
+
 ## 中间件
 
 中间件通过 `Phase()` 声明生效阶段，按注册顺序执行：
@@ -187,7 +205,7 @@ func (m *MyMiddleware) BeforeProcessMessage(ctx context.Context, b broker.IBroke
 - **投递确认**：开启 `rabbitmq.Confirm(true)` 后等待 Publisher Confirm，Nack 则重新入队
 - **消费确认**：手动 Ack；失败 Nack 且不重回队列，直接进入死信队列
 - **断线重连**：连接 / 信道关闭后按间隔自动重连，声明队列与入队均有最大重试次数
-- **优雅停机**：关闭前将内存延时队列中未到期的消息重新入队
+- **未确认消息重回队列**：内存延时队列中的消息始终未 ACK，连接 / 信道关闭后由 RabbitMQ 自动重新投递（会重新计时）
 - **去重保护**：Consumer 维护 delivery tag 集合，重复 Ack / Nack 会被忽略
 
 ## 目录结构
@@ -222,8 +240,21 @@ func (m *MyMiddleware) BeforeProcessMessage(ctx context.Context, b broker.IBroke
 ## 开发
 
 ```bash
+# 单元测试（不需要外部依赖）
 go test ./...
+
+# 集成测试（需要真实 RabbitMQ，并启用延时插件）
+docker run -d --name rabbitmq -p 5672:5672 \
+  -e RABBITMQ_DEFAULT_USER=app -e RABBITMQ_DEFAULT_PASS=app \
+  rabbitmq:3.13-management
+# 将 rabbitmq_delayed_message_exchange-3.13.0.ez 放入容器 /opt/rabbitmq/plugins/ 后：
+docker exec rabbitmq rabbitmq-plugins enable rabbitmq_delayed_message_exchange
+
+AMQP_URL="amqp://app:app@127.0.0.1:5672/" \
+  go test -tags integration -v ./broker/rabbitmq/ -run TestDelayedTask
 ```
+
+集成测试会分别验证插件模式与内存模式的延时时长。
 
 ## 限制
 

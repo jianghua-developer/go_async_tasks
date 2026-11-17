@@ -255,24 +255,24 @@ func (p *consumerProcess) handleDelayMessage(message consumer.IConsumerMessage) 
 
 func (p *consumerProcess) handleMassage(message consumer.IConsumerMessage) {
 	m := message.Message()
-	if m.IsDelayed() && !p.dlxConsumer {
-		if !p.broker.ConsumeDelayDirect() {
-			p.delayQueue.Offer(message, m.ETA)
-			p.logger.Debug("push message to delay queue", "message", m)
-		}
-	} else {
-		if !p.broker.HasTask(m.TaskName) {
-			message.WithError(taskNotFound)
-			message.Fail()
-			p.postMessage(message, nack)
-			return
-		}
-		p.workQueue.Push(&pq.Item{
-			Priority: int64(m.Options.Priority),
-			Value:    message,
-		})
-		p.logger.Debug("push message to work queue", "message", m)
+	// 未到期的延时消息：非插件模式下由进程内延时队列等待；
+	// 插件模式（ConsumeDelayDirect）下 broker 已完成延迟，直接进入工作队列。
+	if m.IsDelayed() && !p.dlxConsumer && !p.broker.ConsumeDelayDirect() {
+		p.delayQueue.Offer(message, m.ETA)
+		p.logger.Debug("push message to delay queue", "message", m)
+		return
 	}
+	if !p.broker.HasTask(m.TaskName) {
+		message.WithError(taskNotFound)
+		message.Fail()
+		p.postMessage(message, nack)
+		return
+	}
+	p.workQueue.Push(&pq.Item{
+		Priority: int64(m.Options.Priority),
+		Value:    message,
+	})
+	p.logger.Debug("push message to work queue", "message", m)
 }
 
 func (p *consumerProcess) Close() {
