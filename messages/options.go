@@ -15,6 +15,7 @@ type messageOptions struct {
 	PipeLast       bool          `json:"pipe_last"`       // 是否为pipeline的最后一个任务
 	GroupID        string        `json:"group_id"`        // group ID
 	GroupCallbacks []*Message    `json:"group_callbacks"` //group 回调
+	Period         time.Duration `json:"period"`          // 周期任务执行间隔，>0 时每次成功后重新入队
 }
 
 type IMessageOption interface {

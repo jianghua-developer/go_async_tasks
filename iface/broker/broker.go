@@ -3,9 +3,9 @@ package broker
 import (
 	"context"
 
-	"github.com/fakerjeff/go_async_tasks/iface/consumer"
-	"github.com/fakerjeff/go_async_tasks/iface/task"
-	"github.com/fakerjeff/go_async_tasks/messages"
+	"github.com/jianghua-developer/go_async_tasks/iface/consumer"
+	"github.com/jianghua-developer/go_async_tasks/iface/task"
+	"github.com/jianghua-developer/go_async_tasks/messages"
 )
 
 type IBroker interface {

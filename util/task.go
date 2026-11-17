@@ -3,9 +3,9 @@ package util
 import (
 	"reflect"
 
-	"github.com/fakerjeff/go_async_tasks/util/json"
+	"github.com/jianghua-developer/go_async_tasks/util/json"
 
-	"github.com/fakerjeff/go_async_tasks/iface/task"
+	"github.com/jianghua-developer/go_async_tasks/iface/task"
 )
 
 func ReflectTaskResults(taskResults []*task.Result) ([]reflect.Value, error) {

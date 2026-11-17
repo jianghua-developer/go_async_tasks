@@ -6,17 +6,17 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/fakerjeff/go_async_tasks/config"
+	"github.com/jianghua-developer/go_async_tasks/config"
 
-	"github.com/fakerjeff/go_async_tasks/util"
+	"github.com/jianghua-developer/go_async_tasks/util"
 
 	mapSet "github.com/deckarep/golang-set"
-	"github.com/fakerjeff/go_async_tasks/iface/broker"
-	"github.com/fakerjeff/go_async_tasks/iface/ident"
-	"github.com/fakerjeff/go_async_tasks/iface/log"
-	"github.com/fakerjeff/go_async_tasks/iface/task"
-	"github.com/fakerjeff/go_async_tasks/logger"
-	"github.com/fakerjeff/go_async_tasks/util/pq"
+	"github.com/jianghua-developer/go_async_tasks/iface/broker"
+	"github.com/jianghua-developer/go_async_tasks/iface/ident"
+	"github.com/jianghua-developer/go_async_tasks/iface/log"
+	"github.com/jianghua-developer/go_async_tasks/iface/task"
+	"github.com/jianghua-developer/go_async_tasks/logger"
+	"github.com/jianghua-developer/go_async_tasks/util/pq"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

@@ -1,7 +1,7 @@
 package consumer
 
 import (
-	"github.com/fakerjeff/go_async_tasks/messages"
+	"github.com/jianghua-developer/go_async_tasks/messages"
 )
 
 type IConsumerMessage interface {

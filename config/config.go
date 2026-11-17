@@ -3,10 +3,10 @@ package config
 import (
 	"sync"
 
-	"github.com/fakerjeff/go_async_tasks/iface/barrier"
+	"github.com/jianghua-developer/go_async_tasks/iface/barrier"
 
-	"github.com/fakerjeff/go_async_tasks/iface/backend"
-	"github.com/fakerjeff/go_async_tasks/iface/ident"
+	"github.com/jianghua-developer/go_async_tasks/iface/backend"
+	"github.com/jianghua-developer/go_async_tasks/iface/ident"
 )
 
 var idMaker ident.IDMaker

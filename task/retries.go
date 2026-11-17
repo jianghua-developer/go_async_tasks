@@ -6,6 +6,10 @@ type Retries struct {
 }
 
 func (r Retries) apply(t *Task) {
-	r.RetryEscape = t.Options.RetryEscape
-	r.RetryWhen = t.Options.RetryWhen
+	if len(r.RetryEscape) > 0 {
+		t.Options.RetryEscape = r.RetryEscape
+	}
+	if r.RetryWhen != nil {
+		t.Options.RetryWhen = r.RetryWhen
+	}
 }

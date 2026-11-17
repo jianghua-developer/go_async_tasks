@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/fakerjeff/go_async_tasks/iface/barrier"
 	"github.com/go-redis/redis/v8"
+	"github.com/jianghua-developer/go_async_tasks/iface/barrier"
 )
 
 var barrierDone = errors.New("barrier done")

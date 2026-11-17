@@ -4,12 +4,12 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/fakerjeff/go_async_tasks/consts"
-	"github.com/fakerjeff/go_async_tasks/iface/broker"
-	"github.com/fakerjeff/go_async_tasks/iface/consumer"
-	"github.com/fakerjeff/go_async_tasks/iface/middleware"
-	"github.com/fakerjeff/go_async_tasks/iface/task"
-	tasks "github.com/fakerjeff/go_async_tasks/task"
+	"github.com/jianghua-developer/go_async_tasks/consts"
+	"github.com/jianghua-developer/go_async_tasks/iface/broker"
+	"github.com/jianghua-developer/go_async_tasks/iface/consumer"
+	"github.com/jianghua-developer/go_async_tasks/iface/middleware"
+	"github.com/jianghua-developer/go_async_tasks/iface/task"
+	tasks "github.com/jianghua-developer/go_async_tasks/task"
 )
 
 type Callbacks struct {
@@ -51,7 +51,7 @@ func (c *Callbacks) AfterProcessMessage(ctx context.Context, b broker.IBroker, m
 	var successCallbackName, failureCallbackName string
 	if tt, ok := t.(*tasks.Task); ok {
 		successCallbackName = tt.Options.OnSucess
-		failureCallbackName = tt.Options.OnSucess
+		failureCallbackName = tt.Options.OnFailure
 	} else {
 		return nil
 	}
@@ -73,7 +73,7 @@ func (c *Callbacks) AfterProcessMessage(ctx context.Context, b broker.IBroker, m
 		}
 	} else {
 		if failureCallbackName != "" {
-			failureCallback, ee := b.GetTask(successCallbackName)
+			failureCallback, ee := b.GetTask(failureCallbackName)
 			if ee != nil {
 				return ee
 			}

@@ -3,7 +3,7 @@ package dlx
 import (
 	"context"
 
-	"github.com/fakerjeff/go_async_tasks/iface/task"
+	"github.com/jianghua-developer/go_async_tasks/iface/task"
 )
 
 type EmialTask struct {

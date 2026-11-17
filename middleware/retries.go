@@ -5,16 +5,16 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/fakerjeff/go_async_tasks/util/deepcopy"
+	"github.com/jianghua-developer/go_async_tasks/util/deepcopy"
 
-	"github.com/fakerjeff/go_async_tasks/consts"
-	"github.com/fakerjeff/go_async_tasks/iface/broker"
-	"github.com/fakerjeff/go_async_tasks/iface/consumer"
-	"github.com/fakerjeff/go_async_tasks/iface/middleware"
-	"github.com/fakerjeff/go_async_tasks/iface/task"
-	"github.com/fakerjeff/go_async_tasks/messages"
-	tasks "github.com/fakerjeff/go_async_tasks/task"
-	"github.com/fakerjeff/go_async_tasks/util"
+	"github.com/jianghua-developer/go_async_tasks/consts"
+	"github.com/jianghua-developer/go_async_tasks/iface/broker"
+	"github.com/jianghua-developer/go_async_tasks/iface/consumer"
+	"github.com/jianghua-developer/go_async_tasks/iface/middleware"
+	"github.com/jianghua-developer/go_async_tasks/iface/task"
+	"github.com/jianghua-developer/go_async_tasks/messages"
+	tasks "github.com/jianghua-developer/go_async_tasks/task"
+	"github.com/jianghua-developer/go_async_tasks/util"
 )
 
 var retriesExceeded = errors.New("retries exceeded")

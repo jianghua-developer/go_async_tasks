@@ -3,9 +3,9 @@ package messages
 import (
 	"time"
 
-	"github.com/fakerjeff/go_async_tasks/iface/ident"
-	"github.com/fakerjeff/go_async_tasks/iface/task"
-	"github.com/fakerjeff/go_async_tasks/util/json"
+	"github.com/jianghua-developer/go_async_tasks/iface/ident"
+	"github.com/jianghua-developer/go_async_tasks/iface/task"
+	"github.com/jianghua-developer/go_async_tasks/util/json"
 )
 
 type Message struct {

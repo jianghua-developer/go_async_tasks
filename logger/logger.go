@@ -4,8 +4,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/fakerjeff/go_async_tasks/consts"
-	"github.com/fakerjeff/go_async_tasks/iface/log"
+	"github.com/jianghua-developer/go_async_tasks/consts"
+	"github.com/jianghua-developer/go_async_tasks/iface/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

@@ -4,14 +4,14 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/fakerjeff/go_async_tasks/consts"
+	"github.com/jianghua-developer/go_async_tasks/consts"
 
-	"github.com/fakerjeff/go_async_tasks/config"
+	"github.com/jianghua-developer/go_async_tasks/config"
 
-	"github.com/fakerjeff/go_async_tasks/iface/broker"
-	"github.com/fakerjeff/go_async_tasks/iface/consumer"
-	"github.com/fakerjeff/go_async_tasks/iface/middleware"
-	"github.com/fakerjeff/go_async_tasks/iface/task"
+	"github.com/jianghua-developer/go_async_tasks/iface/broker"
+	"github.com/jianghua-developer/go_async_tasks/iface/consumer"
+	"github.com/jianghua-developer/go_async_tasks/iface/middleware"
+	"github.com/jianghua-developer/go_async_tasks/iface/task"
 )
 
 type Results struct {

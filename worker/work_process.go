@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/fakerjeff/go_async_tasks/consts"
+	"github.com/jianghua-developer/go_async_tasks/consts"
 
-	"github.com/fakerjeff/go_async_tasks/iface/broker"
-	"github.com/fakerjeff/go_async_tasks/iface/consumer"
-	"github.com/fakerjeff/go_async_tasks/iface/log"
-	"github.com/fakerjeff/go_async_tasks/iface/middleware"
-	"github.com/fakerjeff/go_async_tasks/iface/task"
-	"github.com/fakerjeff/go_async_tasks/util/pq"
+	"github.com/jianghua-developer/go_async_tasks/iface/broker"
+	"github.com/jianghua-developer/go_async_tasks/iface/consumer"
+	"github.com/jianghua-developer/go_async_tasks/iface/log"
+	"github.com/jianghua-developer/go_async_tasks/iface/middleware"
+	"github.com/jianghua-developer/go_async_tasks/iface/task"
+	"github.com/jianghua-developer/go_async_tasks/util/pq"
 )
 
 var workProcessClosed = errors.New("work process closed")

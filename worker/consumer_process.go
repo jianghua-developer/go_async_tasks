@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fakerjeff/go_async_tasks/errr"
-	"github.com/fakerjeff/go_async_tasks/iface/broker"
-	"github.com/fakerjeff/go_async_tasks/iface/consumer"
-	"github.com/fakerjeff/go_async_tasks/iface/log"
-	"github.com/fakerjeff/go_async_tasks/iface/middleware"
-	"github.com/fakerjeff/go_async_tasks/messages"
-	"github.com/fakerjeff/go_async_tasks/util"
-	"github.com/fakerjeff/go_async_tasks/util/deepcopy"
-	"github.com/fakerjeff/go_async_tasks/util/pq"
+	"github.com/jianghua-developer/go_async_tasks/errr"
+	"github.com/jianghua-developer/go_async_tasks/iface/broker"
+	"github.com/jianghua-developer/go_async_tasks/iface/consumer"
+	"github.com/jianghua-developer/go_async_tasks/iface/log"
+	"github.com/jianghua-developer/go_async_tasks/iface/middleware"
+	"github.com/jianghua-developer/go_async_tasks/messages"
+	"github.com/jianghua-developer/go_async_tasks/util"
+	"github.com/jianghua-developer/go_async_tasks/util/deepcopy"
+	"github.com/jianghua-developer/go_async_tasks/util/pq"
 )
 
 const (

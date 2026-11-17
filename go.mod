@@ -1,4 +1,4 @@
-module github.com/fakerjeff/go_async_tasks
+module github.com/jianghua-developer/go_async_tasks
 
 go 1.16
 
